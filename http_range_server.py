@@ -11,16 +11,16 @@ def client_thread(conn,objects):
         request = data.decode()
         space = request.find(" ")
         type = request[0:space]
-        response = 'Server message: ' + data.decode()
+        
 
-        #
+        
         # Lookup requested object
-       # for obj in objects:
-          #  if type == "GET" and str(obj) in request:
-           #     response = obj.encode()
-            #if type == "HEAD" and str(obj) in request:
-             #   time = time.time()
-              #  response = 'Time %s\nServer: CSCI 6760 Final\nSize: %d' % (time, len(obj))
+        for obj in objects:
+            if type == "GET" and str(obj) in request:
+                response = obj.encode()
+            if type == "HEAD" and str(obj) in request:
+                time = time.time()
+                response = 'Time %s\nServer: CSCI 6760 Final\nSize: %d' % (time, len(obj))
 
         conn.sendall(response)
     conn.close()
@@ -37,7 +37,7 @@ def main():
     args = parser.parse_args()
 
     port = args.server_port
-    dir_path = args.object_dir
+    dir_path = args.objects_dir
 
     # test using directory
     if dir_path:
