@@ -1,17 +1,30 @@
-import threading
+import _thread
 import socket
 import argparse
 import sys, os
+import time
 
 
-def multi_threaded_client(conn):
+def client_thread(conn,objects):
     while True:
         data = conn.recv(2048)
-        response = 'Server message: ' + data.decode('utf-8')
-        if not data:
-            break
-        conn.sendall(str.encode(response))
+        request = data.decode()
+        space = request.find(" ")
+        type = request[0:space]
+        response = 'Server message: ' + data.decode()
+
+        #
+        # Lookup requested object
+       # for obj in objects:
+          #  if type == "GET" and str(obj) in request:
+           #     response = obj.encode()
+            #if type == "HEAD" and str(obj) in request:
+             #   time = time.time()
+              #  response = 'Time %s\nServer: CSCI 6760 Final\nSize: %d' % (time, len(obj))
+
+        conn.sendall(response)
     conn.close()
+
 
 def main():
     # Set up argument parsing automation
@@ -24,20 +37,35 @@ def main():
     args = parser.parse_args()
 
     port = args.server_port
-    thread_count = 0
+    dir_path = args.object_dir
 
-    server_socket = socket.socket(socket.AF_INET,socket.SOCK_STREAM)
+    # test using directory
+    if dir_path:
+        obj_list = []
 
-    try:
-        server_socket.bind(('',port))
-    except socket.error as e:
-        print(str(e))
+        for folder, subfolder, files in os.walk(dir_path):
+            for f in files:
+                complete_path = os.path.join(folder, f)
+                obj_list.append(complete_path)
 
-    server_socket.listen(1)
+        threads = 0
 
-    while True:
-        client, address = server_socket.accept()
-        threading.
+        server_socket = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
+
+        try:
+            server_socket.bind(('', port))
+        except socket.error as e:
+            print(str(e))
+
+        print('Server is listening...')
+        server_socket.listen(1)
+
+        while True:
+            client, address = server_socket.accept()
+            msg = 'Connected to: ' + address[0] + ':' + str(address[1])
+            print(msg)
+            _thread.start_new_thread(client_thread(client, obj_list))
+            threads += 1
 
 
 if __name__ == '__main__':
